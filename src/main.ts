@@ -113,7 +113,7 @@ function makeCard(card: Card): THREE.Group {
   const edge = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
   const fm = new THREE.MeshStandardMaterial({ map: ft });
   const bm = new THREE.MeshStandardMaterial({ map: bt });
-  const m = new THREE.Mesh(geo, [edge, edge, edge, edge, fm, bm]);
+  const m = new THREE.Mesh(geo, [edge, edge, edge, edge, bm, fm]);
   m.castShadow = true; m.receiveShadow = true;
   g.add(m);
   (g as any)._fm = fm; (g as any)._bm = bm;
@@ -140,6 +140,9 @@ class App {
   mouse = new THREE.Vector2();
   drag: C3D | null = null;
   plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.5);
+  startTime = 0;
+  elapsed = 0;
+  running = true;
 
   constructor() {
     this._init();
@@ -448,12 +451,18 @@ class App {
       c.mesh.position.set(c.cx, c.cy, c.cz);
     }
     this.renderer.render(this.scene, this.camera);
+    this._score();
     requestAnimationFrame(() => this._loop());
   }
 
-  _newGame() { this.game.newGame(); this._sync(); }
+  _newGame() { this.game.newGame(); this.startTime = performance.now(); this.elapsed = 0; this.running = true; this._sync(); }
   _undo() { this.game.undo(); this._sync(); }
-  _score() { document.getElementById('score')!.textContent = `Score: ${this.game.score}`; }
+  _score() {
+    if (this.running) this.elapsed = Math.floor((performance.now() - this.startTime) / 1000);
+    const m = Math.floor(this.elapsed / 60);
+    const s = (this.elapsed % 60).toString().padStart(2, '0');
+    document.getElementById('score')!.textContent = `Score: ${this.game.score} | Time: ${m}:${s} | Undo: ${this.game.history.length}`;
+  }
 }
 
 new App();
