@@ -5,6 +5,8 @@ import { Card, Suit, RANK_VALUE, SUIT_COLORS } from './types';
 const CARD_W = 2.0;
 const CARD_H = CARD_W * 1.285;
 const CARD_DEPTH = 0.03;
+const TABLE_Y = 0.02;
+const STACK_Y = 0.008;
 const TABLEAU_SPACING_X = 2.5;
 const OVERLAP_UP = 0.45;
 const OVERLAP_DOWN = 0.12;
@@ -409,7 +411,7 @@ class App {
     for (let i = 0; i < this.game.stock.length; i++) {
       const c = this.cards.get(this.game.stock[i].id);
       if (!c) continue;
-      c.hx = STOCK_X; c.hz = STOCK_Z; c.hy = i * 0.005;
+      c.hx = STOCK_X; c.hz = STOCK_Z; c.hy = TABLE_Y + i * STACK_Y;
       c.tx = c.hx; c.tz = c.hz; c.ty = c.hy;
     }
     // Waste
@@ -417,7 +419,7 @@ class App {
       const c = this.cards.get(this.game.waste[i].id);
       if (!c) continue;
       const fan = Math.max(0, i - this.game.waste.length + 3) * 0.8;
-      c.hx = WASTE_X + fan; c.hz = WASTE_Z; c.hy = 0;
+      c.hx = WASTE_X + fan; c.hz = WASTE_Z; c.hy = TABLE_Y;
       c.tx = c.hx; c.tz = c.hz; c.ty = c.hy;
     }
     // Foundations
@@ -425,7 +427,7 @@ class App {
       for (let i = 0; i < this.game.foundations[f].length; i++) {
         const c = this.cards.get(this.game.foundations[f][i].id);
         if (!c) continue;
-        c.hx = FND_X[f]; c.hz = FND_Z; c.hy = 0;
+        c.hx = FND_X[f]; c.hz = FND_Z; c.hy = TABLE_Y + i * STACK_Y;
         c.tx = c.hx; c.tz = c.hz; c.ty = c.hy;
       }
     }
@@ -436,7 +438,7 @@ class App {
         if (!c) continue;
         const tx = col * TABLEAU_SPACING_X - 2 * TABLEAU_SPACING_X;
         const ov = this.game.tableau[col][i].faceUp ? OVERLAP_UP : OVERLAP_DOWN;
-        c.hx = tx; c.hz = TAB_Z + i * ov; c.hy = 0;
+        c.hx = tx; c.hz = TAB_Z + i * ov; c.hy = TABLE_Y + i * STACK_Y;
         c.tx = c.hx; c.tz = c.hz; c.ty = c.hy;
       }
     }
