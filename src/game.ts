@@ -24,6 +24,8 @@ function cloneState(g: SolitaireGame): Snapshot {
   };
 }
 
+export { cloneState };
+
 function restoreState(g: SolitaireGame, s: Snapshot): void {
   g.stock = s.stock;
   g.waste = s.waste;

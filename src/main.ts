@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SolitaireGame } from './game';
+import { SolitaireGame, cloneState } from './game';
 import { Card, Suit, RANK_VALUE, SUIT_COLORS } from './types';
 
 const CARD_W = 2.0;
@@ -157,11 +157,21 @@ class App {
     tbl.rotation.x = -Math.PI / 2; tbl.position.y = -0.5; tbl.receiveShadow = true;
     this.scene.add(tbl);
 
-    // Foundation placeholders
+     // Foundation placeholders with suit symbols
+    const suits: Suit[] = ['spades', 'hearts', 'clubs', 'diamonds'];
     for (let i = 0; i < 4; i++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 330;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#2E7D32';
+      ctx.beginPath(); ctx.roundRect(0, 0, 256, 330, 12); ctx.fill();
+      ctx.fillStyle = '#1B5E20';
+      ctx.font = '80px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(suitSym(suits[i]), 128, 165);
+      const tex = new THREE.CanvasTexture(canvas);
       const ph = new THREE.Mesh(
         new THREE.PlaneGeometry(CARD_W - 0.2, CARD_H - 0.2),
-        new THREE.MeshStandardMaterial({ color: 0x2E7D32, transparent: true, opacity: 0.4 })
+        new THREE.MeshStandardMaterial({ map: tex, transparent: true, opacity: 0.5 })
       );
       ph.rotation.x = -Math.PI / 2;
       ph.position.set(FND_X[i], -0.49, FND_Z);
@@ -278,7 +288,7 @@ class App {
     const w = this._sw(e.clientX, e.clientY);
     if (c && c.pile === 'stock') {
       this._drawStock();
-    } else if (!c && Math.abs(w.x - STOCK_X) < 1.5 && Math.abs(w.y - STOCK_Z) < 2) {
+    } else if (!c && Math.abs(w.x - STOCK_X) < 1.5 && Math.abs(w.z - STOCK_Z) < 2) {
       this._drawStock();
     }
   }
@@ -350,7 +360,9 @@ class App {
         } else if (s.t === 'waste' && this.game.waste.length > 0) {
           const top = this.game.waste[this.game.waste.length - 1];
           if (this.game.canPlaceOnTableau(top, col)) {
+            this.game.history.push(cloneState(this.game));
             this.game.waste.pop(); this.game.tableau[col].push(top);
+            this.game.score += 10;
             this._sync(); return true;
           }
         }
