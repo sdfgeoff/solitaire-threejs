@@ -108,27 +108,28 @@ interface C3D {
 function makeCard(card: Card): THREE.Group {
   const g = new THREE.Group();
   const geo = new THREE.BoxGeometry(CARD_W, CARD_H, CARD_DEPTH);
-  const ft = new THREE.CanvasTexture(cardTexture(card, true));
-  const bt = new THREE.CanvasTexture(cardTexture(card, false));
+  const faceTex = new THREE.CanvasTexture(cardTexture(card, true));
+  const backTex = new THREE.CanvasTexture(cardTexture(card, false));
+  // After rotation.x = -PI/2, +Z becomes +Y (top), -Z becomes -Y (bottom)
+  const topMat = new THREE.MeshStandardMaterial({ map: card.faceUp ? faceTex : backTex });
+  const botMat = new THREE.MeshStandardMaterial({ map: card.faceUp ? backTex : faceTex });
   const edge = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
-  const fm = new THREE.MeshStandardMaterial({ map: ft });
-  const bm = new THREE.MeshStandardMaterial({ map: bt });
-  const m = new THREE.Mesh(geo, [edge, edge, edge, edge, bm, fm]);
+  const m = new THREE.Mesh(geo, [edge, edge, edge, edge, topMat, botMat]);
   m.castShadow = true; m.receiveShadow = true;
   // Lay card flat on the table (face points toward +Y / camera)
   m.rotation.x = -Math.PI / 2;
   g.add(m);
-  (g as any)._fm = fm; (g as any)._bm = bm;
+  (g as any)._topMat = topMat; (g as any)._botMat = botMat;
   return g;
 }
 
 function refreshCard(c3d: C3D): void {
-  const fm = (c3d.mesh as any)._fm as THREE.MeshStandardMaterial;
-  const bm = (c3d.mesh as any)._bm as THREE.MeshStandardMaterial;
-  fm.map = new THREE.CanvasTexture(cardTexture(c3d.card, c3d.card.faceUp));
-  fm.needsUpdate = true;
-  bm.map = new THREE.CanvasTexture(cardTexture(c3d.card, false));
-  bm.needsUpdate = true;
+  const topMat = (c3d.mesh as any)._topMat as THREE.MeshStandardMaterial;
+  const botMat = (c3d.mesh as any)._botMat as THREE.MeshStandardMaterial;
+  topMat.map = new THREE.CanvasTexture(cardTexture(c3d.card, c3d.card.faceUp) ? cardTexture(c3d.card, true) : cardTexture(c3d.card, false));
+  topMat.needsUpdate = true;
+  botMat.map = new THREE.CanvasTexture(c3d.card.faceUp ? cardTexture(c3d.card, false) : cardTexture(c3d.card, true));
+  botMat.needsUpdate = true;
 }
 
 // ── App ──
