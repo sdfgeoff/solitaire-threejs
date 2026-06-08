@@ -115,6 +115,8 @@ function makeCard(card: Card): THREE.Group {
   const bm = new THREE.MeshStandardMaterial({ map: bt });
   const m = new THREE.Mesh(geo, [edge, edge, edge, edge, bm, fm]);
   m.castShadow = true; m.receiveShadow = true;
+  // Lay card flat on the table (face points toward +Y / camera)
+  m.rotation.x = -Math.PI / 2;
   g.add(m);
   (g as any)._fm = fm; (g as any)._bm = bm;
   return g;
